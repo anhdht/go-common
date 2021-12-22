@@ -1,0 +1,38 @@
+name: Test code on PR
+'on': pull_request
+jobs:
+  build_and_preview:
+    if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    runs-on: ubuntu-latest
+    env:
+      CODECOV_TOKEN: "b1384aa7-29b2-4db4-bdde-a70faec5982f"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.0'
+      - name: Install test report
+        if: always()
+        run: go get github.com/vakenbolt/go-test-report
+      - name: Generate test report
+        if: always()
+        run: go test -json ./... | go-test-report -t "Go Common"
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Test Report
+          path: ./test_report.html
+          retention-days: 3
+      - name: Run tests and coverage
+        if: always()
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      - name: Upload coverage to Codecov
+        if: always()
+        run: bash <(curl -s https://codecov.io/bash)
+      - name: Clean up
+        if: always()
+        run: rm -rf ./test_report.html && rm -rf ./coverage.out
