@@ -17,6 +17,21 @@ var (
 	onceInit sync.Once
 )
 
+type cfg struct {
+}
+
+func (c *cfg) IsLocal() bool {
+	return false
+}
+
+func (c *cfg) GetLevel() zapcore.Level {
+	return zapcore.DebugLevel
+}
+
+func init() {
+	_, _ = NewLogger(&cfg{}, DefaultJSONEncoder())
+}
+
 // NewLogger initializes log by input parameters
 // lvl - global log level: Debug(-1), Info(0), Warn(1), Error(2), DPanic(3), Panic(4), Fatal(5)
 // timeFormat - custom time format for logger of empty string to use default
